@@ -34,6 +34,7 @@ async function getData(){
     catch(e){
         // res.status(500).send('Failed to fetch data from the api')
         console.log('Failed to fetch data from the api')
+        console.log(e)
     }
 }
 
@@ -45,6 +46,7 @@ app.listen(port, ()=>{
     })
     .catch((e)=>{
         console.log('Failed in the first attempt itself')
+        console.log(e)
     })
     setInterval(getData,1800000)
 })
