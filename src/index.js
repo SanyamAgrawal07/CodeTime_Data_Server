@@ -1,5 +1,5 @@
-// import express from 'express'
 const express = require('express')
+const axios = require('axios')
 
 const app = express()
 const port = process.env.PORT || 8000
@@ -15,24 +15,22 @@ let myData={
 async function getData(){
     api_calls=api_calls+1
     try{
-        let response = await fetch('https://kontests.net/api/v1/codeforces');
-        var data = await response.json();
-        myData.codeforces = data
+        let response = await axios.get('https://kontests.net/api/v1/codeforces');
+        myData.codeforces = response.data
 
-        response = await fetch('https://kontests.net/api/v1/code_chef');
-        data = await response.json();
-        myData.code_chef = data
+        response = await axios.get('https://kontests.net/api/v1/code_chef');
+        // data = response
+        myData.code_chef = response.data
 
-        response = await fetch('https://kontests.net/api/v1/leet_code');
-        data = await response.json();
-        myData.leet_code = data
+        response = await axios.get('https://kontests.net/api/v1/leet_code');
+        // data = response
+        myData.leet_code = response.data
 
-        response = await fetch('https://kontests.net/api/v1/at_coder');
-        data = await response.json();
-        myData.at_coder = data
+        response = await axios.get('https://kontests.net/api/v1/at_coder');
+        // data = response
+        myData.at_coder = response.data
     }
     catch(e){
-        // res.status(500).send('Failed to fetch data from the api')
         console.log('Failed to fetch data from the api')
         console.log(e)
     }
@@ -42,6 +40,7 @@ app.listen(port, ()=>{
     getData()
     .then(response=>{
         console.log('app is running on '+port)
+        // console.log(myData)
         api_calls=1
     })
     .catch((e)=>{
