@@ -95,7 +95,7 @@ app.post('/webhook',(req,res)=>{
     const body = req.body
     const message = req.body.message.text.toLowerCase().trim()
     const chat_id= body.message.chat.id
-    if(!allUsers.contains(chat_id)) allUsers.push(chat_id)
+    if(!allUsers.includes(chat_id)) allUsers.push(chat_id)
     // const firstName = body.message.chat.first_name
     if(message==='recent'){
         const date= body.message.date
