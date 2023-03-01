@@ -2,6 +2,9 @@ const { format } = require('date-fns')
 const getTime = require('./durationTime.js')
 const axios = require('axios')
 
+const url = process.env.TELE_URL
+const apiToken = process.env.API_TOKEN
+
 function getCommandsMessage(){
     let s = `The following commands are supported at this moment for the upcoming contests:
 *Cf* - Codeforces
