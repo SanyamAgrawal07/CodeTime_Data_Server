@@ -4,6 +4,7 @@ const axios = require('axios')
 
 const url = process.env.TELE_URL
 const apiToken = process.env.API_TOKEN
+const hr5min30 = 19800000
 
 function getCommandsMessage(){
     let s = `The following commands are supported at this moment for the upcoming contests:
@@ -49,10 +50,12 @@ function getWeekendContests(myData){
 `
                     s+=s1
                 }
+                let temp = timestamp.getTime() + hr5min30
+                timestamp = new Date(temp)
                 let s1 = `
 [${con.name}](${con.url})
-Date: ${format(new Date(con.start_time),'dd MMM')}
-Time: ${format(new Date(con.start_time),'h:mm a')}
+Date: ${format(timestamp,'dd MMM')}
+Time: ${format(timestamp,'h:mm a')}
 Duration: ${getTime(con.duration)}
 `
                 s+=s1
@@ -101,10 +104,13 @@ function getRecentContests(date,myData){
 `
                     s+=s1
                 }
+                let timestamp2 = new Date(con.start_time)
+                let temp = timestamp2.getTime() + hr5min30
+                timestamp2 = new Date(temp)
                 let s1 = `
 [${con.name}](${con.url})
-Date: ${format(new Date(con.start_time),'dd MMM')}
-Time: ${format(new Date(con.start_time),'h:mm a')}
+Date: ${format(timestamp2,'dd MMM')}
+Time: ${format(timestamp2,'h:mm a')}
 Duration: ${getTime(con.duration)}
 `
                 s+=s1
@@ -149,10 +155,13 @@ function getContestsMessage(sh,myData){
 
 `
     contestData.forEach((con)=>{
+        let timestamp = new Date(con.start_time)
+        let temp = timestamp.getTime() + hr5min30
+        timestamp = new Date(temp)
         let s1 = `
 [${con.name}](${con.url})
-Date: ${format(new Date(con.start_time),'dd MMM')}
-Time: ${format(new Date(con.start_time),'h:mm a')}
+Date: ${format(timestamp,'dd MMM')}
+Time: ${format(timestamp,'h:mm a')}
 Duration: ${getTime(con.duration)}
 `
         s+=s1
