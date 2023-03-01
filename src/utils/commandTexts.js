@@ -1,5 +1,6 @@
 const { format } = require('date-fns')
 const getTime = require('./durationTime.js')
+const axios = require('axios')
 
 function getCommandsMessage(){
     let s = `The following commands are supported at this moment for the upcoming contests:
