@@ -60,15 +60,15 @@ app.listen(port, ()=>{
     .then(response=>{
         console.log('app is running on '+port)
         api_calls=1
-        myData.codeforces.push({
-            name: "Codeforces Round Sample",
-            url: "https://codeforces.com/contestRegistration/1789",
-            start_time: "2023-03-01T03:38:00.000Z",
-            end_time: "2023-03-01T04:55:00.000Z",
-            duration: "7200",
-            in_24_hours: "Yes",
-            status: "BEFORE"
-        })
+        // myData.codeforces.push({
+        //     name: "Codeforces Round Sample",
+        //     url: "https://codeforces.com/contestRegistration/1789",
+        //     start_time: "2023-03-01T03:38:00.000Z",
+        //     end_time: "2023-03-01T04:55:00.000Z",
+        //     duration: "7200",
+        //     in_24_hours: "Yes",
+        //     status: "BEFORE"
+        // })
         setRemindersInitial(myData)
         setInterval(()=>{
             setReminderRepeated(myData)
