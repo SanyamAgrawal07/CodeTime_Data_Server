@@ -1,9 +1,11 @@
-const { format } = require('date-fns')
+// const { format } = require('date-fns')
+const { utcToZonedTime,format } = require('date-fns-tz')
 const getTime = require('./durationTime.js')
 const axios = require('axios')
 
 const url = process.env.TELE_URL
 const apiToken = process.env.API_TOKEN
+const istTimezone = 'Asia/Kolkata'
 // const hr5min30 = 19800000
 
 function getCommandsMessage(){
@@ -50,10 +52,11 @@ function getWeekendContests(myData){
 `
                     s+=s1
                 }
+                let zonedTime = utcToZonedTime(timestamp,istTimezone)
                 let s1 = `
 [${con.name}](${con.url})
-Date: ${format(timestamp,'dd MMM',{ timeZone: 'Asia/Kolkata' })}
-Time: ${format(timestamp,'h:mm a',{ timeZone: 'Asia/Kolkata' })}
+Date: ${format(zonedTime,'dd MMM',{ timeZone: istTimezone })}
+Time: ${format(zonedTime,'h:mm a',{ timeZone: istTimezone })}
 Duration: ${getTime(con.duration)}
 `
                 s+=s1
@@ -103,10 +106,11 @@ function getRecentContests(date,myData){
                     s+=s1
                 }
                 let timestamp2 = new Date(con.start_time)
+                timestamp2=utcToZonedTime(timestamp2,istTimezone)
                 let s1 = `
 [${con.name}](${con.url})
-Date: ${format(timestamp2,'dd MMM',{ timeZone: 'Asia/Kolkata' })}
-Time: ${format(timestamp2,'h:mm a',{ timeZone: 'Asia/Kolkata' })}
+Date: ${format(timestamp2,'dd MMM',{ timeZone: istTimezone })}
+Time: ${format(timestamp2,'h:mm a',{ timeZone: istTimezone })}
 Duration: ${getTime(con.duration)}
 `
                 s+=s1
@@ -152,11 +156,12 @@ function getContestsMessage(sh,myData){
 `
     contestData.forEach((con)=>{
         let timestamp = new Date(con.start_time)
-        console.log(timestamp)
+        let zonedTime = utcToZonedTime(timestamp,istTimezone)
+        // console.log(timestamp)
         let s1 = `
 [${con.name}](${con.url})
-Date: ${format(timestamp,'dd MMM',{ timeZone: 'Asia/Kolkata' })}
-Time: ${format(timestamp,'h:mm a',{ timeZone: 'Asia/Kolkata' })}
+Date: ${format(zonedTime,'dd MMM',{ timeZone: istTimezone })}
+Time: ${format(zonedTime,'h:mm a',{ timeZone: istTimezone })}
 Duration: ${getTime(con.duration)}
 `
         s+=s1
