@@ -130,19 +130,19 @@ Duration: ${getTime(con.duration)}
 function getContestsMessage(sh,myData){
     let platform
     let label
-    if(sh==='cf'){ 
+    if(sh==='/codeforces'){ 
         platform='codeforces'
         label='Codeforces'
     }
-    if(sh==='cc'){ 
+    if(sh==='/codechef'){ 
         platform='code_chef'
         label='CodeChef'
     }
-    if(sh==='lc'){ 
+    if(sh==='/leetcode'){ 
         platform='leet_code'
         label='LeetCode'
     }
-    if(sh==='ac'){ 
+    if(sh==='/atcoder'){ 
         platform='at_coder'
         label='AtCoder'
     }
