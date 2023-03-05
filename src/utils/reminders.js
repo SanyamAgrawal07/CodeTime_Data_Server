@@ -10,9 +10,11 @@ const hrs12 = 43200000
 const hrs36 = 129600000
 
 function sendMessage(contest,hours){
+    console.log(contest.name,hours)
     contest.duration = getTime(contest.duration)
     contest.start_time = format(new Date(contest.start_time),'h:mm a')
     const allUsers = require('../index.js')
+    console.log(allUsers)
     allUsers.forEach((user)=>{
         const options = {
             chat_id: user,

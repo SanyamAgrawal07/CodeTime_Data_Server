@@ -60,15 +60,6 @@ app.listen(port, ()=>{
     .then(response=>{
         console.log('app is running on '+port)
         api_calls=1
-        // myData.codeforces.push({
-        //     name: "Codeforces Round Sample",
-        //     url: "https://codeforces.com/contestRegistration/1789",
-        //     start_time: "2023-03-01T03:38:00.000Z",
-        //     end_time: "2023-03-01T04:55:00.000Z",
-        //     duration: "7200",
-        //     in_24_hours: "Yes",
-        //     status: "BEFORE"
-        // })
         setRemindersInitial(myData)
         setInterval(()=>{
             setReminderRepeated(myData)
@@ -97,7 +88,7 @@ app.post('/webhook',(req,res)=>{
     const chat_id= body.message.chat.id
     if(!allUsers.includes(chat_id)) allUsers.push(chat_id)
     // const firstName = body.message.chat.first_name
-    if(message==='recent'){
+    if(message==='/recent'){
         const date= body.message.date
         const options = {
             chat_id: chat_id,
@@ -112,8 +103,7 @@ app.post('/webhook',(req,res)=>{
             res.sendStatus(200)
         });
     }
-    else if(message==='weekend'){
-        const date= body.message.date
+    else if(message==='/weekend'){
         const options = {
             chat_id: chat_id,
             parse_mode:'Markdown',
@@ -127,7 +117,7 @@ app.post('/webhook',(req,res)=>{
             res.sendStatus(200)
         });
     }
-    else if(message==='cf' || message==='lc' || message==='ac' || message==='cc'){
+    else if(message==='/codeforces' || message==='/leetcode' || message==='/atcoder' || message==='/codechef'){
         const options = {
             chat_id: chat_id,
             parse_mode:'Markdown',
@@ -141,7 +131,7 @@ app.post('/webhook',(req,res)=>{
             res.sendStatus(200)
         });
     }
-    else if(message==='/start' || message==='help'){
+    else if(message==='/start' || message==='/help'){
         console.log('inside extra')
         sendCommandsMessage(res,chat_id)
     }
