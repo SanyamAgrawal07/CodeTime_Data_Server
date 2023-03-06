@@ -1,29 +1,32 @@
 const axios = require('axios')
-const { format } = require('date-fns')
+const { utcToZonedTime,format } = require('date-fns-tz')
 const getTime = require('./durationTime.js')
+const {user} = require('../models/index.model.js');
 
 const url = process.env.TELE_URL
 const apiToken = process.env.API_TOKEN
+const istTimezone = 'Asia/Kolkata'
 const min15 = 900000
 const hrs1 = 3600000
 const hrs12 = 43200000
 const hrs36 = 129600000
 
-function sendMessage(contest,hours){
+async function sendMessage(contest,hours){
     console.log(contest.name,hours)
-    contest.duration = getTime(contest.duration)
-    contest.start_time = format(new Date(contest.start_time),'h:mm a')
-    const allUsers = require('../index.js')
+    const timestamp = new Date(contest.start_time)
+    let zonedTime = utcToZonedTime(timestamp,istTimezone)
+    const allUsers =await user.findAll({raw:true,attributes: ['chat_id']})
     console.log(allUsers)
     allUsers.forEach((user)=>{
         const options = {
-            chat_id: user,
+            chat_id: user.chat_id,
             parse_mode:'Markdown',
             text: 
             `*Contest Reminder!*
 ${contest.name} is about to start in ${hours} hours!
-Duration: ${contest.duration}
-Time: ${contest.start_time}
+Date: ${format(zonedTime,'dd MMM',{ timeZone: istTimezone })}
+Time: ${format(zonedTime,'h:mm a',{ timeZone: istTimezone })}
+Duration: ${getTime(contest.duration)}
 _Don't forget to register!_
 [Contest URL](${contest.url})`
         }
@@ -59,6 +62,12 @@ function sendReminder(contest,hours,myData){
     if((timestamp-timestampNow)>=(ideal-min15) && (timestamp-timestampNow)<=(ideal+min15)){
         console.log(`${contest.name} starting in ${hours} hours!`)
         sendMessage(contest,hours)
+        .then((res)=>{
+            console.log('Message sent to all users')
+        })
+        .catch((e)=>{
+            console.log('SendMessage promise error:',e)
+        })
     }
     else{
         if((timestamp-timestampNow)>hrs12) return

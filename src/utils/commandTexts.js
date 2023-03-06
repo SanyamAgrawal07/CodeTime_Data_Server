@@ -8,20 +8,63 @@ const apiToken = process.env.API_TOKEN
 const istTimezone = 'Asia/Kolkata'
 // const hr5min30 = 19800000
 
-function getCommandsMessage(){
-    let s = `The following commands are supported at this moment for the upcoming contests:
-*Cf* - Codeforces
-*Cc* - Codechef
-*Lc* - Leetcode
-*Ac* - Atcoder
-*Recent* - Contests on upcoming two days
-*Weekend* - Contests on upcoming weekend
-*Help* - To get this list of commands`
+function getCommandsMessage(currentUser){
+    let s = `Hello ${currentUser.firstname}✌️
+
+The following commands are supported at this moment for the upcoming contests:
+
+*/recent* - Contests on upcoming two days
+*/weekend* - Contests on upcoming weekend
+*/codeforces* - Codeforces
+*/codechef* - Codechef
+*/leetcode* - Leetcode
+*/atcoder* - Atcoder
+*/hackerrank* - HackerRank
+*/help* - To get this list of commands
+
+
+In some commands you will only receive information for the platforms you select,modify them by:
+
+`
+
+const arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
+arr.forEach((sh)=>{
+    let label
+    let platform
+    if(sh==='codeforces'){ 
+        platform='codeforces'
+        label='Codeforces'
+    }
+    if(sh==='code_chef'){ 
+        platform='codechef'
+        label='CodeChef'
+    }
+    if(sh==='leet_code'){ 
+        platform='leetcode'
+        label='LeetCode'
+    }
+    if(sh==='at_coder'){ 
+        platform='atcoder'
+        label='AtCoder'
+    }
+    if(sh==='hacker_rank'){ 
+        platform='hackerrank'
+        label='HackerRank'
+    }
+    if(!currentUser[sh]) s+=`/add${platform} - *Add* ${label}
+`
+    else{
+        s+=`/remove${platform} - *Remove* ${label}
+`
+    }
+})
+
 return s
 }
 
-function getWeekendContests(myData){
-    const arr = ['codeforces','code_chef','leet_code','at_coder']
+function getWeekendContests(currentUser,myData){
+    let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
+    arr = arr.filter((plat)=> currentUser[plat])
     let overall = false
     const hrs24 = 86400
     let s=`Upcoming contests on this weekend🔥
@@ -48,6 +91,7 @@ function getWeekendContests(myData){
                     if(plat=='code_chef') label='CodeChef'
                     if(plat=='leet_code') label='LeetCode'
                     if(plat=='at_coder') label='AtCoder'
+                    if(plat=='hacker_rank') label='HackerRank'
                     let s1 = `*${label}*
 `
                     s+=s1
@@ -73,8 +117,10 @@ Duration: ${getTime(con.duration)}
     return s
 }
 
-function getRecentContests(date,myData){
-    const arr = ['codeforces','code_chef','leet_code','at_coder']
+function getRecentContests(date,currentUser,myData){
+    let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
+    arr = arr.filter((plat)=> currentUser[plat])
+    // console.log(arr)
     const hrs24 = 86400
     const startOfDay = date-(date%hrs24)+hrs24
     const endTime = startOfDay+hrs24+hrs24
@@ -101,6 +147,7 @@ function getRecentContests(date,myData){
                     if(plat=='code_chef') label='CodeChef'
                     if(plat=='leet_code') label='LeetCode'
                     if(plat=='at_coder') label='AtCoder'
+                    if(plat=='hacker_rank') label='HackerRank'
                     let s1 = `*${label}*
 `
                     s+=s1
@@ -146,6 +193,10 @@ function getContestsMessage(sh,myData){
         platform='at_coder'
         label='AtCoder'
     }
+    if(sh==='/hackerrank'){ 
+        platform='hacker_rank'
+        label='HackerRank'
+    }
     let contestData = myData[platform]
     contestData = contestData.filter((ele)=>ele.status==="BEFORE")
     contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)
@@ -171,11 +222,11 @@ _Don't forget to register!_`
     return s
 }
 
-function sendCommandsMessage(res,chat_id){
+function sendCommandsMessage(res,chat_id,currentUser){
     const options = {
         chat_id: chat_id,
         parse_mode:'Markdown',
-        text: getCommandsMessage()
+        text: getCommandsMessage(currentUser)
     }
     axios.post(`${url}${apiToken}/sendMessage`,options)
     .then((response) => {
