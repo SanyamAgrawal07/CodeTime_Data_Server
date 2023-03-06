@@ -104,11 +104,10 @@ app.get('/',async (req,res)=>{
 app.post('/webhook',async (req,res)=>{
     console.log(req.body)
     const body = req.body
-    const message = req.body.message.text.toLowerCase().trim()
-    const chat_id= body.message.chat.id
-    const firstname= body.message.chat.first_name
-    const lastname= body.message.chat.last_name
-    // if(!allUsers.includes(chat_id)) allUsers.push(chat_id)
+    const message = req.body.message.text
+    const chat_id= body.message.from.id
+    const firstname= body.message.from.first_name
+    const lastname= body.message.from.last_name
     try{
         // console.log(chat_id)
         let [currentUser, created] = await db.user.findOrCreate({
