@@ -1,7 +1,7 @@
 const axios = require('axios')
 const { utcToZonedTime,format } = require('date-fns-tz')
 const getTime = require('./durationTime.js')
-const {user} = require('../models/index.model.js');
+const db = require('../models/index.model.js');
 
 const url = process.env.TELE_URL
 const apiToken = process.env.API_TOKEN
@@ -15,7 +15,7 @@ async function sendMessage(contest,hours){
     console.log(contest.name,hours)
     const timestamp = new Date(contest.start_time)
     let zonedTime = utcToZonedTime(timestamp,istTimezone)
-    const allUsers =await user.findAll({raw:true,attributes: ['chat_id']})
+    const allUsers =await db.user.findAll({raw:true,attributes: ['chat_id']})
     console.log(allUsers)
     allUsers.forEach((user)=>{
         const options = {

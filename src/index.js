@@ -8,8 +8,7 @@ const {getContestsMessage,
     getWeekendContests,
     sendCommandsMessage} = require('./utils/commandTexts.js');
 const {setRemindersInitial,setReminderRepeated} = require('./utils/reminders.js')
-const {sequelize,user} = require('./models/index.model.js');
-const { fi } = require('date-fns/locale')
+const db = require('./models/index.model.js');
     
 const app = express()
 const url = process.env.TELE_URL
@@ -21,15 +20,6 @@ const hrs24 = 86400000
 
 app.use(cors())
 app.use(bodyParser.json())
-
-
-sequelize.sync({force: true})
-  .then(() => {
-    console.log("Synced db.");
-  })
-  .catch((err) => {
-    console.log("Failed to sync db: " + err.message);
-  });
 
 let api_calls
 let myData={
@@ -70,6 +60,13 @@ async function getData(){
 }
 
 app.listen(port, ()=>{
+    db.sequelize.sync()
+    .then(() => {
+        console.log("Synced db.");
+    })
+    .catch((err) => {
+        console.log("Failed to sync db: " + err.message);
+    });
     getData()
     .then(response=>{
         console.log('app is running on '+port)
@@ -114,7 +111,7 @@ app.post('/webhook',async (req,res)=>{
     // if(!allUsers.includes(chat_id)) allUsers.push(chat_id)
     try{
         // console.log(chat_id)
-        let [currentUser, created] = await user.findOrCreate({
+        let [currentUser, created] = await db.user.findOrCreate({
             raw:true,
             where: { chat_id: chat_id },
             defaults: {
@@ -194,7 +191,7 @@ app.post('/webhook',async (req,res)=>{
             }
             updatedInfo[official]=true
             currentUser[official]=true
-            await user.update(updatedInfo,{
+            await db.user.update(updatedInfo,{
                 where:{ chat_id:chat_id }
             })
             const options = {
@@ -228,7 +225,7 @@ app.post('/webhook',async (req,res)=>{
             }
             updatedInfo[official]=false
             currentUser[official]=false
-            await user.update(updatedInfo,{
+            await db.user.update(updatedInfo,{
                 where:{ chat_id:chat_id }
             })
             const options = {
