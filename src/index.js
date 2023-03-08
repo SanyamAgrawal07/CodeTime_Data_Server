@@ -101,21 +101,112 @@ app.get('/',async (req,res)=>{
     }
 })
 
+app.get('/totalusers',async(req,res)=>{
+    try{
+        const username=req.body.username
+        const password=req.body.password
+        if(username!==process.env.STAT_USER || password!==process.env.STAT_PASS){
+            res.status(403).send('👀😂😂')
+            return
+        }
+        // console.log('statistics!')
+        const { count, rows } = await db.user.findAndCountAll({attributes:['firstname','lastname']})
+        let returnObj={
+            count
+        }
+        let arr1=[]
+        let arr2=[]
+        rows.forEach((row)=>{
+            const myUser=row.dataValues
+            if(myUser.lastname===process.env.LASTNAME_SECRET){
+                arr2.push(myUser.firstname)
+            }
+            else{
+                arr1.push(myUser.firstname)
+            }
+        })
+        returnObj.indivisuals=arr1
+        returnObj.groups=arr2
+        // console.log(rows)
+        res.status(200).send(returnObj)
+    }
+    catch(e){
+        res.status(500).send(e)
+    }
+})
+
 app.post('/webhook',async (req,res)=>{
     console.log(req.body)
     const body = req.body
-    const message = req.body.message.text
-    const chat_id= body.message.from.id
-    const firstname= body.message.from.first_name
-    const lastname= body.message.from.last_name
     try{
+        if(body.my_chat_member){
+            const chat_id=body.my_chat_member.chat.id
+            // console.log(body.my_chat_member.chat.new_chat_member)
+            if(body.my_chat_member.chat.type==='private' && body.my_chat_member.new_chat_member.status==='kicked'){
+                await db.user.destroy({
+                    where: { chat_id },
+                });
+            }
+            return res.sendStatus(200)
+        }
+        let message = body.message.text
+        const chat_id= body.message.chat.id
+        let firstname= body.message.from.first_name
+        let lastname= body.message.from.last_name
+        let user_id=null
+        let user_firstname=null
+        let user_lastname=null
+        let is_group=false
+        if(body.message.chat.type==='group' || body.message.chat.type==='supergroup'){
+            is_group=true
+            user_firstname=firstname
+            user_lastname=lastname
+            firstname=body.message.chat.title
+            lastname=process.env.LASTNAME_SECRET
+            user_id=body.message.from.id
+            // console.log(body.message.entities)
+        }
+        if(!message){
+            if(body.message.left_chat_member && body.message.left_chat_member.username===process.env.BOT_USERNAME){
+                await db.user.destroy({
+                    where: { chat_id },
+                });
+            }
+            if(body.message.new_chat_member && body.message.new_chat_member.username===process.env.BOT_USERNAME){
+                await db.user.findOrCreate({
+                    where: { chat_id: chat_id },
+                    defaults: {
+                      firstname:firstname,
+                      lastname:lastname,
+                      at_coder: true
+                    }
+                });
+            }
+            return res.sendStatus(200)
+        }
         // console.log(chat_id)
+        const groupReference=`@${process.env.BOT_USERNAME}`
+        if(message.endsWith(groupReference)){
+            message=message.substring(0,message.length-groupReference.length)
+        }
+        console.log(message,chat_id)
+        if(is_group){
+            await db.user.findOrCreate({
+                raw:true,
+                where: { chat_id: user_id },
+                defaults: {
+                  firstname:user_firstname,
+                  lastname:user_lastname
+                }
+            });
+        }
         let [currentUser, created] = await db.user.findOrCreate({
             raw:true,
             where: { chat_id: chat_id },
             defaults: {
               firstname:firstname,
-              lastname:lastname
+              lastname:lastname,
+              at_coder: is_group? true : false
             }
         });
         if(created) currentUser=currentUser.dataValues
@@ -244,7 +335,22 @@ app.post('/webhook',async (req,res)=>{
             sendCommandsMessage(res,chat_id,currentUser)
         }
         else{
-            res.sendStatus(200)
+            if(!is_group){
+                const options = {
+                    chat_id: chat_id,
+                    parse_mode:'Markdown',
+                    text: `Unrecognized command! Say what?`
+                }
+                axios.post(`${url}${apiToken}/sendMessage`,options)
+                .then((response) => {
+                    res.status(200).send(response);
+                }).catch((error) => {
+                    res.sendStatus(200)
+                });
+            }
+            else{
+                res.sendStatus(200)
+            }
         }
     }
     catch(e){
