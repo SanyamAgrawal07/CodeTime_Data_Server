@@ -2,6 +2,7 @@
 const { utcToZonedTime,format } = require('date-fns-tz')
 const getTime = require('./durationTime.js')
 const axios = require('axios')
+const db = require('../models/index.model.js');
 
 const url = process.env.TELE_URL
 const apiToken = process.env.API_TOKEN
@@ -62,7 +63,7 @@ arr.forEach((sh)=>{
 return s
 }
 
-function getWeekendContests(currentUser,myData){
+async function getWeekendContests(currentUser){
     let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
     arr = arr.filter((plat)=> currentUser[plat])
     let overall = false
@@ -70,6 +71,9 @@ function getWeekendContests(currentUser,myData){
     let s=`Upcoming contests on this weekend🔥
     
 `
+
+    let myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
     arr.forEach((plat)=>{
         let contestData = myData[plat]
         contestData = contestData.filter((ele)=>ele.status==="BEFORE")
@@ -117,7 +121,7 @@ Duration: ${getTime(con.duration)}
     return s
 }
 
-function getRecentContests(date,currentUser,myData){
+async function getRecentContests(date,currentUser){
     let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
     arr = arr.filter((plat)=> currentUser[plat])
     // console.log(arr)
@@ -129,6 +133,9 @@ function getRecentContests(date,currentUser,myData){
     let s=`Upcoming latest contests🔥
     
 `
+
+    let myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
     arr.forEach((plat)=>{
         let contestData = myData[plat]
         contestData = contestData.filter((ele)=>ele.status==="BEFORE")
@@ -174,7 +181,7 @@ Duration: ${getTime(con.duration)}
     return s
 }
 
-function getContestsMessage(sh,myData){
+async function getContestsMessage(sh){
     let platform
     let label
     if(sh==='/codeforces'){ 
@@ -197,6 +204,8 @@ function getContestsMessage(sh,myData){
         platform='hacker_rank'
         label='HackerRank'
     }
+    let myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
     let contestData = myData[platform]
     contestData = contestData.filter((ele)=>ele.status==="BEFORE")
     contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)

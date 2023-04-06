@@ -22,36 +22,48 @@ app.use(cors())
 app.use(bodyParser.json())
 
 let api_calls
-let myData={
-    code_chef:{},
-    codeforces:{},
-    leet_code:{},
-    at_coder:{}
-}
+// let myData={
+//     code_chef:{},
+//     codeforces:{},
+//     leet_code:{},
+//     at_coder:{}
+// }
 
 // let allUsers = [665198762,1873008929]
 
 async function getData(){
     api_calls=api_calls+1
     try{
-        let response = await axios.get('https://kontests.net/api/v1/codeforces');
+        let myData={
+            code_chef:{},
+            codeforces:{},
+            leet_code:{},
+            at_coder:{}
+        }
+
+        let response = await axios.get(process.env.CODEFORCES_URL);
         myData.codeforces = response.data
 
-        response = await axios.get('https://kontests.net/api/v1/code_chef');
+        response = await axios.get(process.env.CODECHEF_URL);
         // data = response
         myData.code_chef = response.data
 
-        response = await axios.get('https://kontests.net/api/v1/leet_code');
+        response = await axios.get(process.env.LEETCODE_URL);
         // data = response
         myData.leet_code = response.data
 
-        response = await axios.get('https://kontests.net/api/v1/at_coder');
+        response = await axios.get(process.env.ATCODER_URL);
         // data = response
         myData.at_coder = response.data
 
-        response = await axios.get('https://kontests.net/api/v1/hacker_rank');
+        response = await axios.get(process.env.HACKERRANK_URL);
         // data = response
         myData.hacker_rank = response.data
+
+        // console.log(myData)
+        await db.apidata.destroy({where:{}})
+        await db.apidata.create(myData)
+        console.log('Api data set in table')
     }
     catch(e){
         console.log('Failed to fetch data from the api')
@@ -80,9 +92,9 @@ app.listen(port, ()=>{
         //     status: "BEFORE"
         // })
         api_calls=1
-        setRemindersInitial(myData)
+        setRemindersInitial()
         setInterval(()=>{
-            setReminderRepeated(myData)
+            setReminderRepeated()
         },hrs24)
     })
     .catch((e)=>{
@@ -224,7 +236,7 @@ app.post('/webhook',async (req,res)=>{
             const options = {
                 chat_id: chat_id,
                 parse_mode:'Markdown',
-                text: getRecentContests(date,currentUser,myData)
+                text: await getRecentContests(date,currentUser)
             }
             axios.post(`${url}${apiToken}/sendMessage`,options)
             .then((response) => {
@@ -238,7 +250,7 @@ app.post('/webhook',async (req,res)=>{
             const options = {
                 chat_id: chat_id,
                 parse_mode:'Markdown',
-                text: getWeekendContests(currentUser,myData)
+                text: await getWeekendContests(currentUser)
             }
             axios.post(`${url}${apiToken}/sendMessage`,options)
             .then((response) => {
@@ -252,7 +264,7 @@ app.post('/webhook',async (req,res)=>{
             const options = {
                 chat_id: chat_id,
                 parse_mode:'Markdown',
-                text: getContestsMessage(message,myData)
+                text: await getContestsMessage(message)
             }
             axios.post(`${url}${apiToken}/sendMessage`,options)
             .then((response) => {

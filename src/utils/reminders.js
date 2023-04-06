@@ -39,9 +39,11 @@ _Don't forget to register!_
     })
 }
 
-function sendReminder(contest,hours,myData){
+async function sendReminder(contest,hours){
     console.log(`${contest.name} reminder of ${hours} hours`)
     const arr = ['codeforces','code_chef','leet_code','at_coder']
+    let myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
     const totalData = myData
     arr.forEach((platform)=>{
         const contestData = totalData[platform]
@@ -74,20 +76,22 @@ function sendReminder(contest,hours,myData){
         if((timestamp-hrs12-timestampNow)>0){
             const timeDelay = timestamp-hrs12-timestampNow
             setTimeout(()=>{
-                sendReminder(contest,12,myData)
+                sendReminder(contest,12)
             },timeDelay)
         }
         if((timestamp-hrs1-timestampNow)>0){
             const timeDelay = timestamp-hrs1-timestampNow
             setTimeout(()=>{
-                sendReminder(contest,1,myData)
+                sendReminder(contest,1)
             },timeDelay)
         }
     }
 }
 
-function setReminderRepeated(myData){
+async function setReminderRepeated(){
     const arr = ['codeforces','code_chef','leet_code','at_coder']
+    let myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
     const totalData=myData
     arr.forEach((platform)=>{
         let contestData = totalData[platform]
@@ -100,21 +104,23 @@ function setReminderRepeated(myData){
             if((timestamp-hrs12-timestampNow)>0){
                 const timeDelay = timestamp-hrs12-timestampNow
                 setTimeout(()=>{
-                    sendReminder(contest,12,myData)
+                    sendReminder(contest,12)
                 },timeDelay)
             }
             if((timestamp-hrs1-timestampNow)>0){
                 const timeDelay = timestamp-hrs1-timestampNow
                 setTimeout(()=>{
-                    sendReminder(contest,1,myData)
+                    sendReminder(contest,1)
                 },timeDelay)
             }
         })
     })
 }
 
-function setRemindersInitial(myData){
+async function setRemindersInitial(){
     const arr = ['codeforces','code_chef','leet_code','at_coder']
+    let myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
     const totalData = myData
     arr.forEach((platform)=>{ 
         let contestData = totalData[platform]
@@ -127,14 +133,14 @@ function setRemindersInitial(myData){
                 const timeDelay = timestamp-hrs12-timestampNow
                 console.log(`${contest.name} in 12`,timeDelay)
                 setTimeout(()=>{
-                    sendReminder(contest,12,myData)
+                    sendReminder(contest,12)
                 },timeDelay)
             }
             if((timestamp-hrs1-timestampNow)>0){
                 const timeDelay = timestamp-hrs1-timestampNow
                 console.log(`${contest.name} in 1`,timeDelay)
                 setTimeout(()=>{
-                    sendReminder(contest,1,myData)
+                    sendReminder(contest,1)
                 },timeDelay)
             }
         })
