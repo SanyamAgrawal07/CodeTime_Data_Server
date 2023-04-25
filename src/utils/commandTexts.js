@@ -122,63 +122,69 @@ Duration: ${getTime(con.duration)}
 }
 
 async function getRecentContests(date,currentUser){
-    let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
-    arr = arr.filter((plat)=> currentUser[plat])
-    // console.log(arr)
-    const hrs24 = 86400
-    const startOfDay = date-(date%hrs24)+hrs24
-    const endTime = startOfDay+hrs24+hrs24
-    console.log(startOfDay,endTime)
-    let overall = false
-    let s=`Upcoming latest contests🔥
+    try{
+        let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
+        arr = arr.filter((plat)=> currentUser[plat])
+        // console.log(arr)
+        const hrs24 = 86400
+        const startOfDay = date-(date%hrs24)+hrs24
+        const endTime = startOfDay+hrs24+hrs24
+        console.log(startOfDay,endTime)
+        let overall = false
+        let s=`Upcoming latest contests🔥
+        
+    `
     
-`
-
-    let myData = await db.apidata.findAll()
-    myData=myData[0].dataValues
-    arr.forEach((plat)=>{
-        let contestData = myData[plat]
-        contestData = contestData.filter((ele)=>ele.status==="BEFORE")
-        contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)
-        let first = true
-        contestData.forEach((con)=>{
-            let timestamp = new Date(con.start_time).getTime();
-            timestamp = (Math.floor(timestamp/1000))
-            // console.log(timestamp,endTime)
-            if(timestamp<endTime){
-                overall=true
-                if(first){
-                    first=false
-                    let label
-                    if(plat=='codeforces') label='Codeforces'
-                    if(plat=='code_chef') label='CodeChef'
-                    if(plat=='leet_code') label='LeetCode'
-                    if(plat=='at_coder') label='AtCoder'
-                    if(plat=='hacker_rank') label='HackerRank'
-                    let s1 = `*${label}*
-`
+        let myData = await db.apidata.findAll()
+        myData=myData[0].dataValues
+        arr.forEach((plat)=>{
+            let contestData = myData[plat]
+            contestData = contestData.filter((ele)=>ele.status==="BEFORE")
+            contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)
+            let first = true
+            contestData.forEach((con)=>{
+                let timestamp = new Date(con.start_time).getTime();
+                timestamp = (Math.floor(timestamp/1000))
+                // console.log(timestamp,endTime)
+                if(timestamp<endTime){
+                    overall=true
+                    if(first){
+                        first=false
+                        let label
+                        if(plat=='codeforces') label='Codeforces'
+                        if(plat=='code_chef') label='CodeChef'
+                        if(plat=='leet_code') label='LeetCode'
+                        if(plat=='at_coder') label='AtCoder'
+                        if(plat=='hacker_rank') label='HackerRank'
+                        let s1 = `*${label}*
+    `
+                        s+=s1
+                    }
+                    let timestamp2 = new Date(con.start_time)
+                    timestamp2=utcToZonedTime(timestamp2,istTimezone)
+                    let s1 = `
+    [${con.name}](${con.url})
+    Date: ${format(timestamp2,'dd MMM',{ timeZone: istTimezone })}
+    Time: ${format(timestamp2,'h:mm a',{ timeZone: istTimezone })}
+    Duration: ${getTime(con.duration)}
+    `
                     s+=s1
                 }
-                let timestamp2 = new Date(con.start_time)
-                timestamp2=utcToZonedTime(timestamp2,istTimezone)
-                let s1 = `
-[${con.name}](${con.url})
-Date: ${format(timestamp2,'dd MMM',{ timeZone: istTimezone })}
-Time: ${format(timestamp2,'h:mm a',{ timeZone: istTimezone })}
-Duration: ${getTime(con.duration)}
-`
-                s+=s1
+            })
+            if(!first){
+                s+=`
+    `
             }
         })
-        if(!first){
-            s+=`
-`
+        if(!overall){
+            s=`There are no upcoming contests in the next two days!☹️`
         }
-    })
-    if(!overall){
-        s=`There are no upcoming contests in the next two days!☹️`
+        // console.log(s)
+        return s
     }
-    return s
+    catch(err){
+        console.log(err)
+    }
 }
 
 async function getContestsMessage(sh){
