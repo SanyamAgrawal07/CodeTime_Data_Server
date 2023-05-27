@@ -5,12 +5,8 @@ async function redisInit(){
     try{
         const host = process.env.REDIS_HOSTNAME
         const port = process.env.REDIS_PORT
-        redisClient = redis.createClient({
-            host,
-            port
-            // password: process.env.REDIS_PASSWORD
-        })
-        console.log(host,port)
+        redisClient = redis.createClient(host,port,redis)
+        // console.log(host,port)
         redisClient.on("error", (error) => console.error(`Error : ${error}`));
     }
     catch(err){
