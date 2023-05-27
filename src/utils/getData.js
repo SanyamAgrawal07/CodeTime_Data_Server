@@ -1,4 +1,5 @@
 const axios = require('axios')
+const redisClient = require('../redis.js')
 const db = require('../models/index.model.js');
 
 async function getData(){
@@ -33,6 +34,8 @@ async function getData(){
         await db.apidata.destroy({where:{}})
         await db.apidata.create(myData)
         console.log('Api data set in table')
+        await redisClient.set('apidata', JSON.stringify(myData))
+        console.log('Redis data set')
     }
     catch(e){
         console.log('Failed to fetch data from the api')
@@ -40,4 +43,23 @@ async function getData(){
     }
 }
 
-module.exports = getData
+async function getApiData(){
+    let myData = await redisClient.get('apidata')
+    if(myData){ 
+        myData = JSON.parse(myData)
+        console.log('Got my data from redis')
+        return myData
+    }
+    myData = await db.apidata.findAll()
+    myData=myData[0].dataValues
+    await redisClient.set('apidata', JSON.stringify(myData),{
+        EX: 1800
+    })
+    console.log('Not from redis')
+    return myData
+}
+
+module.exports = {
+    getData,
+    getApiData
+}

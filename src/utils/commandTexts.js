@@ -3,6 +3,7 @@ const { utcToZonedTime,format } = require('date-fns-tz')
 const getTime = require('./durationTime.js')
 const axios = require('axios')
 const db = require('../models/index.model.js');
+const {getApiData} = require('../utils/getData.js')
 
 const url = process.env.TELE_URL
 const apiToken = process.env.API_TOKEN
@@ -64,61 +65,67 @@ return s
 }
 
 async function getWeekendContests(currentUser){
-    let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
-    arr = arr.filter((plat)=> currentUser[plat])
-    let overall = false
-    const hrs24 = 86400
-    let s=`Upcoming contests on this weekend🔥
-    
-`
-
-    let myData = await db.apidata.findAll()
-    myData=myData[0].dataValues
-    arr.forEach((plat)=>{
-        let contestData = myData[plat]
-        contestData = contestData.filter((ele)=>ele.status==="BEFORE")
-        contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)
-        let first = true
-        contestData.forEach((con)=>{
-            let timestamp = new Date(con.start_time)
-            // timestamp = (Math.floor(timestamp/1000))
-            // console.log(timestamp,endTime)
-            const date1 = new Date()
-            const time_difference = timestamp.getTime() - date1.getTime();  
-            const days_difference = time_difference / (1000 * hrs24);  
-            if((timestamp.getDay()===0 || timestamp.getDay()===6) && days_difference<7){
-                overall=true
-                if(first){
-                    first=false
-                    let label
-                    if(plat=='codeforces') label='Codeforces'
-                    if(plat=='code_chef') label='CodeChef'
-                    if(plat=='leet_code') label='LeetCode'
-                    if(plat=='at_coder') label='AtCoder'
-                    if(plat=='hacker_rank') label='HackerRank'
-                    let s1 = `*${label}*
-`
+    try{
+        let arr = ['codeforces','code_chef','leet_code','at_coder','hacker_rank']
+        arr = arr.filter((plat)=> currentUser[plat])
+        let overall = false
+        const hrs24 = 86400
+        let s=`Upcoming contests on this weekend🔥
+        
+    `
+        let myData = await getApiData()
+        arr.forEach((plat)=>{
+            let contestData = myData[plat]
+            contestData = contestData.filter((ele)=>ele.status==="BEFORE")
+            contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)
+            let first = true
+            contestData.forEach((con)=>{
+                let timestamp = new Date(con.start_time)
+                // timestamp = (Math.floor(timestamp/1000))
+                // console.log(timestamp,endTime)
+                let timestampNow = Date.now()
+                if(timestampNow>timestamp.getTime()) return
+                const date1 = new Date()
+                const time_difference = timestamp.getTime() - date1.getTime();  
+                const days_difference = time_difference / (1000 * hrs24);  
+                if((timestamp.getDay()===0 || timestamp.getDay()===6) && days_difference<7){
+                    overall=true
+                    if(first){
+                        first=false
+                        let label
+                        if(plat=='codeforces') label='Codeforces'
+                        if(plat=='code_chef') label='CodeChef'
+                        if(plat=='leet_code') label='LeetCode'
+                        if(plat=='at_coder') label='AtCoder'
+                        if(plat=='hacker_rank') label='HackerRank'
+                        let s1 = `*${label}*
+    `
+                        s+=s1
+                    }
+                    let zonedTime = utcToZonedTime(timestamp,istTimezone)
+                    let s1 = `
+    [${con.name}](${con.url})
+    Date: ${format(zonedTime,'dd MMM',{ timeZone: istTimezone })}
+    Time: ${format(zonedTime,'h:mm a',{ timeZone: istTimezone })}
+    Duration: ${getTime(con.duration)}
+    `
                     s+=s1
                 }
-                let zonedTime = utcToZonedTime(timestamp,istTimezone)
-                let s1 = `
-[${con.name}](${con.url})
-Date: ${format(zonedTime,'dd MMM',{ timeZone: istTimezone })}
-Time: ${format(zonedTime,'h:mm a',{ timeZone: istTimezone })}
-Duration: ${getTime(con.duration)}
-`
-                s+=s1
+            })
+            if(!first){
+                s+=`
+    `
             }
         })
-        if(!first){
-            s+=`
-`
+        if(!overall){
+            s=`There are no upcoming contests on this weekend!☹️`
         }
-    })
-    if(!overall){
-        s=`There are no upcoming contests on this weekend!☹️`
+        // console.log(s)
+        return s
     }
-    return s
+    catch(err){
+        console.log(err)
+    }
 }
 
 async function getRecentContests(date,currentUser){
@@ -135,8 +142,9 @@ async function getRecentContests(date,currentUser){
         
     `
     
-        let myData = await db.apidata.findAll()
-        myData=myData[0].dataValues
+        // let myData = await db.apidata.findAll()
+        // myData=myData[0].dataValues
+        let myData = await getApiData()
         arr.forEach((plat)=>{
             let contestData = myData[plat]
             contestData = contestData.filter((ele)=>ele.status==="BEFORE")
@@ -145,6 +153,9 @@ async function getRecentContests(date,currentUser){
             contestData.forEach((con)=>{
                 let timestamp = new Date(con.start_time).getTime();
                 timestamp = (Math.floor(timestamp/1000))
+                let timestampNow = Date.now()
+                timestampNow = (Math.floor(timestampNow/1000))
+                if(timestampNow>timestamp) return
                 // console.log(timestamp,endTime)
                 if(timestamp<endTime){
                     overall=true
@@ -210,8 +221,9 @@ async function getContestsMessage(sh){
         platform='hacker_rank'
         label='HackerRank'
     }
-    let myData = await db.apidata.findAll()
-    myData=myData[0].dataValues
+    // let myData = await db.apidata.findAll()
+    // myData=myData[0].dataValues
+    let myData = await getApiData()
     let contestData = myData[platform]
     contestData = contestData.filter((ele)=>ele.status==="BEFORE")
     contestData.sort((a, b) => (a.start_time > b.start_time) ? 1 : -1)
@@ -222,6 +234,8 @@ async function getContestsMessage(sh){
 `
     contestData.forEach((con)=>{
         let timestamp = new Date(con.start_time)
+        let timestampNow = Date.now()
+        if(timestampNow>timestamp.getTime()) return
         let zonedTime = utcToZonedTime(timestamp,istTimezone)
         // console.log(timestamp)
         let s1 = `
