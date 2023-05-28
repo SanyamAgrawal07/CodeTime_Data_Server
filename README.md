@@ -1,5 +1,5 @@
 # CodeTime_Data_Server
-Webhook controller for the Contest Spy telegram bot!
+Backend for the Contest Spy telegram bot!
 
 
 ## Tech Stack 
@@ -40,18 +40,18 @@ Webhook controller for the Contest Spy telegram bot!
 /src
    
 |-- controllers/
-    |-- users.controller.js     #Contains http request controllers for user methods
+    |-- users.controller.js   #Contains http request controllers for user methods
 |
 |-- models/
-    |-- index.model.js     #Connecting to the postgres database and integrating the models 
-    |-- user.model.js       #Defining the user relation schema
-    |-- apidata.model.js        #Defining the relation schema to store fetched data
+    |-- index.model.js        #Connecting to the postgres database and integrating the models 
+    |-- user.model.js         #Defining the user relation schema
+    |-- apidata.model.js      #Defining the relation schema to store fetched data
 |
 |-- utils/
-    |-- commandTexts.js     #Data filtering and logic according to the specified request
-    |-- durationTime.js     #Time units conversion function
-    |-- getData.js      #Functions to fetch and store data in the databases
-    |-- reminders.js        #Logic to send reminders for contests to the users
+    |-- commandTexts.js       #Data filtering and logic according to the specified request
+    |-- durationTime.js       #Time units conversion function
+    |-- getData.js            #Functions to fetch and store data in the databases
+    |-- reminders.js          #Logic to send reminders for contests to the users
 |
 |-- index.js          #Establishing the express application and connecting to the databases
 |-- redis.js          #Redis database configuration
